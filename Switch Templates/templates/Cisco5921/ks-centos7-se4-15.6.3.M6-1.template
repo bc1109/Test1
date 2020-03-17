@@ -1,0 +1,67 @@
+#version=DEVEL
+
+install
+
+eula --agreed
+
+reboot
+
+# Run the Setup Agent on first boot
+firstboot --enable
+ignoredisk --only-use=sda
+# Keyboard layouts
+keyboard us
+# System language
+lang en_US
+# System timezone
+timezone UTC --isUtc
+
+selinux --permissive
+
+# Network information
+network --hostname=sn-c5921-host.localdomain
+
+# Root password
+rootpw ##ROUTERPW##
+user --name=user --plaintext --password ##ROUTERPW##
+
+# Partition clearing information
+clearpart --all --initlabel --drives=sda
+
+# System bootloader configuration
+bootloader --location=mbr --boot-drive=sda
+autopart --type=lvm
+zerombr
+
+%packages --ignoremissing
+@^minimal
+@base
+%end
+
+%post --nochroot
+echo $(dmidecode -s system-serial-number)-c5921-host.localdomain > /etc/hostname
+
+#!/bin/sh
+
+set -x -v
+exec 1>/mnt/sysimage/root/KSStage1.log 2>&1
+
+echo "==> Copying files from media to install drive..."
+cp -r /run/install/repo/Cisco /mnt/sysimage/var/lib/rpm
+%end
+
+%post
+
+#!/bin/sh
+
+set -x -v
+exec 1>/root/KSStage2.log 2>&1
+
+cd /var/lib/rpm/Cisco
+rpm -Uvh --nodeps --force glibc-2.17-260.el7_6.4.i686.rpm glibc-2.17-260.el7_6.4.x86_64.rpm glibc-common-2.17-260.el7_6.4.x86_64.rpm libacl-2.2.51-14.el7.x86_64.rpm libattr-2.4.46-13.el7.x86_64.rpm libcap-2.22-9.el7.x86_64.rpm libcom_err-1.42.9-13.el7.x86_64.rpm libffi-3.0.13-18.el7.i686.rpm libffi-3.0.13-18.el7.x86_64.rpm libgcc-4.8.5-36.el7_6.1.i686.rpm libgcc-4.8.5-36.el7_6.1.x86_64.rpm libselinux-2.5-14.1.el7.x86_64.rpm libsepol-2.5-10.el7.x86_64.rpm libstdc++-4.8.5-36.el7_6.1.i686.rpm libstdc++-4.8.5-36.el7_6.1.x86_64.rpm libtasn1-4.10-1.el7.i686.rpm libtasn1-4.10-1.el7.x86_64.rpm libverto-0.2.5-4.el7.x86_64.rpm ncurses-5.9-14.20130511.el7_4.x86_64.rpm ncurses-base-5.9-14.20130511.el7_4.noarch.rpm ncurses-libs-5.9-14.20130511.el7_4.i686.rpm ncurses-libs-5.9-14.20130511.el7_4.x86_64.rpm nspr-4.19.0-1.el7_5.i686.rpm nspr-4.19.0-1.el7_5.x86_64.rpm nss-softokn-3.36.0-5.el7_5.i686.rpm nss-softokn-3.36.0-5.el7_5.x86_64.rpm nss-softokn-freebl-3.36.0-5.el7_5.i686.rpm nss-softokn-freebl-3.36.0-5.el7_5.x86_64.rpm nss-util-3.36.0-1.1.el7_6.i686.rpm nss-util-3.36.0-1.1.el7_6.x86_64.rpm
+set -x -v
+exec 1>/root/KSStage22.log 2>&1
+rpm -Uvh c5921-15.6.3.M6-1.i686.rpm
+
+systemctl enable serial-cisco@ttyS0.service
+%end

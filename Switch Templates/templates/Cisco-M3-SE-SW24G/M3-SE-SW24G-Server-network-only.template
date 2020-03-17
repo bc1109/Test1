@@ -1,0 +1,144 @@
+!
+enable
+configure terminal
+enable secret ##ethSW1PW##
+username ##AdminAcct## password 0 ##ethSW1PW##
+service password-encryption
+service tcp-keepalives-in
+hostname M3-SE-SW24G
+no logging console
+spanning-tree mode rapid-pvst
+spanning-tree vlan 1-999 priority 28672
+ip domain name ##FQDN##
+cry key gen rsa 
+2048
+ip ssh time-out 60
+ip ssh authentication-retries 3
+ip ssh version 2 
+!
+vlan ##ServerVLAN##
+name Server
+
+interface GigabitEthernet1/3
+!description SWITCH  M3-SE-SW24G
+!description Port Host-Connection
+ description 1/3 -  Connect to Port 11 or Port 12 on M3-SE-C3560-P
+ switchport mode trunk
+ switchport trunk allowed vlan ##ServerVLAN##
+ 
+interface GigabitEthernet1/4
+ description 1/4 -  Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet1/5
+ description 1/5 -  Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet1/6
+ description 1/6 -  Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet1/7
+ description 1/7 -  Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet1/8
+ description 1/8 -  Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet1/9
+ description 1/9 -  Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet1/10
+ description 1/10 - Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet2/1
+ description 2/1 - Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet2/2
+ description 2/2 - Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet2/3
+ description 2/3 - Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet2/4
+ description 2/4 - Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet2/5
+ description 2/5 - Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet2/6
+ description 2/6 - Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet2/7
+ description 2/7 - Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet2/8
+ description 2/8 - Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet2/9
+ description 2/9 - Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet2/10
+ description 2/10 - Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet2/11
+ description 2/11 - Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet2/12
+ description 2/12 - Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet2/13
+ description 2/13 - Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet2/14
+ description 2/14 - Server VLAN ##ServerVLAN##
+ 
+ interface GigabitEthernet2/15
+ description 2/15 - Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet2/16
+ description 2/16 - Server VLAN ##ServerVLAN##
+ 
+!
+interface range GigabitEthernet1/4 - 10 , GigabitEthernet2/1 - 16
+ switchport access vlan ##ServerVLAN##
+ switchport mode access
+ spanning-tree portfast
+!
+interface TenGigabitEthernet1/1
+ description Ten Gigabit Ethernet 1/1 (undefined)
+ !
+interface TenGigabitEthernet1/2
+ description Ten Gigabit Ethernet 1/2 (undefined)
+!
+
+interface Vlan1
+ no ip address
+
+interface Vlan##ServerVLAN##
+ description Server VLAN is configured.
+ ip address ##SwitchServerVLANIP## ##ServerMask##
+
+ip forward-protocol nd
+ip classless
+ip tcp synwait-time 10
+no ip http server
+
+
+banner motd ^C
+DTECH Labs M3-SE-SW24G
+^C
+
+line console 0
+exec-timeout 10 0
+logging synchronous
+password ##ethSW1PW##
+login
+line vty 0 4
+password ##ethSW1PW##
+login local
+transport input none
+line vty 5 15
+password ##ethSW1PW##
+login local
+transport input none
+end
+
+wr mem
+

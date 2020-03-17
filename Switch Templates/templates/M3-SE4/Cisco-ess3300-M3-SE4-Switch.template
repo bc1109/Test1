@@ -1,0 +1,95 @@
+!
+enable
+configure terminal
+enable secret ##ethSW1PW##
+username ##AdminAcct## password 0 ##ethSW1PW##
+service password-encryption
+service tcp-keepalives-in
+hostname M3-SE4-SWITCH
+no logging console
+spanning-tree mode rapid-pvst
+spanning-tree vlan 1-999 priority 28672
+ip domain name ##FQDN##
+cry key gen rsa 
+2048
+ip ssh time-out 60
+ip ssh authentication-retries 3
+ip ssh version 2 
+!
+vlan ##ServerVLAN##
+name Server
+
+interface GigabitEthernet1/3
+ description 1/3 -  GigabitEthernet1/3
+ 
+interface GigabitEthernet1/4
+ description 1/4 -  Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet1/5
+ description 1/5 -  Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet1/6
+ description 1/6 -  Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet1/7
+ description 1/7 -  Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet1/8
+ description 1/8 -  Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet1/9
+ description 1/9 -  Server VLAN ##ServerVLAN##
+ 
+interface GigabitEthernet1/10
+ description 1/10 CONNECTED_TO_INTERNAL_ROUTER- Server VLAN ##ServerVLAN##
+!description SWITCH  M3-SE4-SWITCH
+!description Port Host-Connection
+ switchport mode trunk
+ switchport trunk allowed vlan ##ServerVLAN##
+!
+interface range GigabitEthernet1/3 - 9
+ switchport access vlan ##ServerVLAN##
+ switchport mode access
+ spanning-tree portfast
+!
+interface TenGigabitEthernet1/1
+ description Ten Gigabit Ethernet 1/1 (undefined)
+ !
+interface TenGigabitEthernet1/2
+ description Ten Gigabit Ethernet 1/2 (undefined)
+!
+
+interface Vlan1
+ no ip address
+
+interface Vlan##ServerVLAN##
+ description Server VLAN is configured.
+ ip address ##SwitchServerVLANIP## ##ServerMask##
+
+ip forward-protocol nd
+ip classless
+ip tcp synwait-time 10
+no ip http server
+
+
+banner motd ^C
+DTECH Labs M3-SE4-SWITCH
+^C
+
+line console 0
+exec-timeout 10 0
+logging synchronous
+password ##ethSW1PW##
+login
+line vty 0 4
+password ##ethSW1PW##
+login local
+transport input none
+line vty 5 15
+password ##ethSW1PW##
+login local
+transport input none
+end
+
+wr mem
+

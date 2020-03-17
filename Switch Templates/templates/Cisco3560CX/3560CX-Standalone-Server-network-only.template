@@ -1,0 +1,139 @@
+!
+enable
+configure terminal
+enable secret ##ethSW1PW##
+username ##AdminAcct## password ##ethSW1PW##
+service password-encryption
+service tcp-keepalives-in
+hostname TACLANSwitch
+no logging console
+logging on
+login on-failure log every 1
+login on-success log every 1
+spanning-tree mode rapid-pvst
+spanning-tree vlan 1-999 priority 28672
+ip domain-name ##FQDN##
+cry key gen rsa 
+2048
+ip ssh time-out 60
+ip ssh authentication-retries 3
+ip ssh version 2 
+!
+vlan ##ServerVLAN##
+name Server
+
+interface GigabitEthernet0/1
+!description SWITCH 1 (Server Network ONLY Configuration)
+!description Port Host-Connection
+ description 1 -  Router Gi0/0 (Trunk)
+ switchport access vlan ##ServerVLAN##
+ switchport mode access
+interface GigabitEthernet0/2
+ description 2 -  Admin Server - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface GigabitEthernet0/3
+ description 3 -  ESXi - ETH-MGMT or VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface GigabitEthernet0/4
+ description 4 -  ESXi - ETH-MGMT or VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface GigabitEthernet0/5
+ description 5 -  ESXi - ETH-MGMT or VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface GigabitEthernet0/6
+ description 6 -  ESXi - ETH-MGMT or VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface GigabitEthernet0/7
+ description 7 -  ESXi - ETH-MGMT or VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface GigabitEthernet0/8
+ description 8 -  ESXi - ETH-MGMT or VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface GigabitEthernet0/9
+ description 9 -  ESXi - ETH-MGMT or VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface GigabitEthernet0/10
+ description 10 - ESXi - ETH-MGMT or VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface GigabitEthernet0/11
+ description 11 - ESXi - ETH-MGMT or VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface GigabitEthernet0/12
+ description 12 - ESXi - ETH-MGMT or VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+
+interface range GigabitEthernet0/2 - 12
+ switchport access vlan ##ServerVLAN##
+ switchport mode access
+ spanning-tree portfast
+
+interface GigabitEthernet0/13
+ description 13 - M3-SE-SW24 Switch (Trunk)
+switchport mode trunk
+switchport access vlan ##ServerVLAN##
+switchport trunk allowed vlan ##ServerVLAN##
+interface GigabitEthernet0/14
+ description 14 - M3-SE-SW24 additional Switch (Trunk)
+switchport mode trunk
+switchport access vlan ##ServerVLAN##
+switchport trunk allowed vlan ##ServerVLAN##
+
+
+interface Vlan1
+ no ip address
+ shutdown
+ desc ::DISABLED::
+
+interface Vlan##ServerVLAN##
+ description Server VLAN is configured.
+ ip address ##SwitchServerVLANIP## ##ServerMask##
+ ip pim sparse-dense-mode
+
+ip routing
+ip route 0.0.0.0 0.0.0.0 ##RouterLANIP##
+ 
+ip forward-protocol nd
+ip classless
+ip tcp synwait-time 10
+no ip http server
+ip multicast-routing distributed
+no ip domain-lookup 
+no service config
+no ip arp gratuitous none 
+
+banner login ^
+"You are accessing a U.S. Government (USG) Information System (IS) that is provided for USG-authorized use only.
+
+By using this IS (which includes any device attached to this IS), you consent to the following conditions:
+
+-The USG routinely intercepts and monitors communications on this IS for purposes including, but not limited to, penetration testing, COMSEC monitoring, network operations and defense, personnel misconduct (PM), law enforcement (LE), and counterintelligence (CI) investigations.
+
+-At any time, the USG may inspect and seize data stored on this IS.
+
+-Communications using, or data stored on, this IS are not private, are subject to routine monitoring, interception, and search, and may be disclosed or used for any USG-authorized purpose.
+
+-This IS includes security measures (e.g., authentication and access controls) to protect USG interests--not for your personal benefit or privacy.
+
+-Notwithstanding the above, using this IS does not constitute consent to PM, LE or CI investigative searching or monitoring of the content of privileged communications, or work product, related to personal representation or services by attorneys, psychotherapists, or clergy, and their assistants. Such communications and work product are private and confidential. See User Agreement for details."
+^
+
+line console 0
+exec-timeout 10 0
+logging synchronous
+password ##ethSW1PW##
+login
+line vty 0 4
+password ##ethSW1PW##
+login local
+exec-timeout 10 0
+transport input none
+line vty 5 15
+password ##ethSW1PW##
+login local
+exec-timeout 10 0
+transport input none
+end
+
+wr mem
+
+

@@ -1,0 +1,124 @@
+!
+enable
+configure terminal
+enable secret ##ethSW1PW##
+username ##AdminAcct## password ##ethSW1PW##
+service password-encryption
+service tcp-keepalives-in
+hostname DTECHSwitch
+no logging console
+spanning-tree mode rapid-pvst
+spanning-tree vlan 1-999 priority 28672
+ip domain-name ##FQDN##
+cry key gen rsa 
+2048
+ip ssh time-out 60
+ip ssh authentication-retries 3
+ip ssh version 2 
+!
+vlan ##ServerVLAN##
+name Server
+vlan ##ClientVLAN##
+name Client
+
+interface GigabitEthernet0/1
+!description SWITCH 1
+!description Port Host-Connection
+ description 1 -  M3-SE-SVR4 ETH/MGMT or M3X-CMP Back - TO_SERVER_MGMT 
+ switchport access vlan ##ServerVLAN##
+ switchport mode access
+ spanning-tree portfast
+interface GigabitEthernet0/2
+ description 2 -  Admin Laptop - TO_LAPTOP_MGMT
+ spanning-tree portfast
+interface GigabitEthernet0/3
+ description 3 -  Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface GigabitEthernet0/4
+ description 4 -  Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface GigabitEthernet0/5
+ description 5 -  Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface GigabitEthernet0/6
+ description 6 -  Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface GigabitEthernet0/7
+ description 7 -  Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface GigabitEthernet0/8
+ description 8 -  Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface GigabitEthernet0/9
+ description 9 -  Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface GigabitEthernet0/10
+ description 10 - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface GigabitEthernet0/11
+ description 11 - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface GigabitEthernet0/12
+ description 12 - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+
+interface range GigabitEthernet0/2 - 12
+ switchport access vlan ##ServerVLAN##
+ switchport mode access
+ spanning-tree portfast
+
+interface GigabitEthernet0/13
+ description 13 - Client Switch Unused (Trunk)
+switchport mode trunk
+switchport access vlan ##ClientVLAN##
+switchport trunk allowed vlan ##ClientVLAN##
+ description 14 - Client Switch Unused (Trunk)
+switchport mode trunk
+switchport access vlan ##ClientVLAN##
+switchport trunk allowed vlan ##ClientVLAN##
+
+interface Vlan1
+ no ip address
+
+interface Vlan##ServerVLAN##
+ description Server VLAN is configured.
+ ip address ##SwitchServerVLANIP## ##ServerMask##
+ ip pim sparse-dense-mode
+
+interface Vlan##ClientVLAN##
+ description Client VLAN is configured.
+ ip address ##ClientGateway## ##ClientMask##
+ ip helper-address ##DHCPServerIP##
+ ip pim sparse-dense-mode
+
+ip route 0.0.0.0 0.0.0.0 ##RouterLANIP##
+ 
+ip forward-protocol nd
+ip classless
+ip routing
+ip tcp synwait-time 10
+no ip http server
+ip multicast-routing distributed
+
+banner motd ^C
+DTECH Labs M3-SE-C3560-P
+^C
+
+line console 0
+exec-timeout 10 0
+logging synchronous
+password ##ethSW1PW##
+login
+line vty 0 4
+password ##ethSW1PW##
+login local
+transport input none
+line vty 5 15
+password ##ethSW1PW##
+login local
+transport input none
+end
+
+wr mem
+
+

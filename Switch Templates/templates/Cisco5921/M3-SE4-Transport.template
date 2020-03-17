@@ -1,0 +1,337 @@
+en
+config t
+no logging console
+enable secret ##RouterPW##
+username ##AdminAcct## password ##RouterPW##
+no service pad
+ip forward-protocol nd
+ip tcp synwait-time 10
+service tcp-keepalives-in
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+!
+hostname ##HOSTNAME##
+!
+no aaa new-model
+no ip source-route
+no ip bootp server
+no ip http server
+no ip http secure-server
+no ip bootp server
+no boot network
+no service call-home
+no ip domain lookup
+!
+ip domain name ##FQDN##
+cry key gen rsa 
+2048
+ip ssh time-out 60
+ip ssh authentication-retries 3
+ip ssh version 2
+ip multicast-routing
+!
+!
+!
+!
+!
+!
+!
+!
+ip dhcp excluded-address ##DHCPEXCLUDESTART## ##DHCPEXCLUDESTOP##
+!
+ip dhcp pool Voice
+ network ##DHCPPOOLVOICENETWORK## ##DHCPPOOLVOICENETWORKMASK##
+ option 150 ip ##DHCPPOOLVOICEOPTION150IP## 
+ default-router ##DHCPPOOLVOICEDEFAULTROUTER##
+!
+!
+!
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!/////////////Example Object-Groups need to build out based off network Discussion////////////////////
+object-group network BattleCommand_NET
+ description BattleCommand Application Servers
+ !<Host A.B.C.D> or <Network A.B.C.D> <Network mask>
+!
+object-group network Data_Subnets_NET 
+ description General Data User Subnets
+ !<Host A.B.C.D> or <Network A.B.C.D> <Network mask>
+!
+object-group network Loopbacks_NET
+ description Loopback Addresses
+ !<Host A.B.C.D> or <Network A.B.C.D> <Network mask>
+!
+object-group network NetworkManagement_NET 
+ description NetworkManagement Subnets
+ !<Host A.B.C.D> or <Network A.B.C.D> <Network mask>
+!
+ object-group network NetworkManagement_NET
+ description NetworkManagement Subnets
+ !<Host A.B.C.D> or <Network A.B.C.D> <Network mask>
+!
+object-group network Voice_Subnets_NET 
+ description Voice Subnets
+  !<Host A.B.C.D> or <Network A.B.C.D> <Network mask>
+!
+object-group service NetworkControl _SVC
+ description Network Control Protocols
+  !<UDP,TCP or UDP-TCP PORT> or <UDP,TCP or UDP-TCP Port Range>
+!
+object-group service NetworkManagement_SVC 
+ description Network Management Protocols
+  !<UDP,TCP or UDP-TCP PORT> or <UDP,TCP or UDP-TCP Port Range>
+ udp eq snmp
+ udp eq snmptrap
+ udp eq syslog
+ tcp eq ftp
+ tcp eq ftp-data
+ tcp eq 22
+!
+object-group service Voice_SVC 
+ description Voice Protocols
+  !<UDP,TCP or UDP-TCP PORT> or <UDP,TCP or UDP-TCP Port Range>
+ udp range 16384 32767
+ udp source range 16384 32767
+ tcp-udp range 1718 1720
+ tcp-udp source range 1718 1720
+ tcp-udp range 5060 5061
+ tcp-udp source range 5060 5061
+!
+!
+object-group service Web_SVC 
+ description Web Protocols
+  !<UDP,TCP or UDP-TCP PORT> or <UDP,TCP or UDP-TCP Port Range>
+ tcp eq www
+ tcp eq 443
+! 
+!
+!
+redundancy
+!
+!
+!
+!/////////////Example Class-Maps need to be Built out based off network Discussion////////////////////
+class-map match-all QOS_Network_Management
+ match access-group name QOS_NetMgmt_Mark
+class-map match-all QOS_Web
+ match access-group name QOS_Web_Mark
+class-map match-all QOS_Network_Control
+ match access-group name QOS_NetControl_Mark
+class-map match-all QOS_Voice
+ match access-group name QOS_Voice_Mark 
+!
+ !/////////////Example Policy-Map needs to be Built out based off Class-Maps////////////////////
+policy-map QOS_Mark
+ class QOS_Web
+  set dscp af13
+ class QOS_Network_Management
+  set dscp af12
+ class QOS_Network_Control
+  set dscp af11
+ class QOS_Voice
+!
+ class class-default
+  set dscp default
+!
+! 
+!
+!
+!
+!
+ crypto isakmp policy 100
+ encr aes 256
+ authentication pre-share
+crypto isakmp key Tunnel-Key address 0.0.0.0        
+!         
+!         
+crypto ipsec transform-set Tunnel_Transform esp-aes 256 esp-sha384-hmac 
+ mode tunnel
+!         
+crypto ipsec profile Tunnel_Protection
+ set transform-set Tunnel_Transform 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ ip address ##LOOPBACKIP## ##LOOPBACKMASK##
+ no ip redirects
+ no ip unreachables
+ ip pim sparse-dense-mode
+ h323-gateway voip bind srcaddr ##LOOPBACKH323GATEWAY##
+!
+interface Tunnel100
+ description DMVPN Tunnel
+ bandwidth 512
+ ip address ##TUNNEL100IP## ##TUNNEL100MASK##
+ no ip redirects
+ no ip proxy-arp
+ ip mtu 1424
+ ip pim nbma-mode
+ ip pim sparse-mode
+ ip flow ingress
+ ip flow egress
+ ip nhrp authentication 100
+ ip nhrp network-id 100
+ ip nhrp redirect
+ ip tcp adjust-mss 1400
+ ip ospf authentication message-digest
+ ip ospf message-digest-key 1 md5 7 06160E325F59060B01
+ ip ospf network point-to-multipoint
+ qos pre-classify
+ cdp enable
+ tunnel source Ethernet0/0
+ tunnel mode gre multipoint
+ tunnel key 100
+ tunnel protection ipsec profile Tunnel_Protection
+!
+interface Ethernet0/0
+ description Encryptor
+ ip address ##ENCRYPTORIP## ##ENCRYPTORMASK##
+ no ip redirects
+ no ip unreachables
+ ip pim sparse-dense-mode
+ duplex auto
+ speed auto
+!
+interface Ethernet0/1
+ description Lan_FW
+ ip address ##LANFWIP## ##LANFWMASK##
+ no ip redirects
+ no ip unreachables
+ ip pim sparse-dense-mode
+ ip ospf priority 10
+ duplex auto
+ speed auto
+ service-policy input QOS_Mark
+!
+interface Ethernet0/2
+ description Unused
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+!
+interface Ethernet0/3
+ description Unused
+ no ip address
+ duplex auto
+ speed auto
+!
+router ospf 100
+ router-id ##ROUTEROSPFIP##
+ passive-interface default
+ no passive-interface Ethernet0/1
+ no passive-interface Tunnel100
+ network ##TUNNEL100IP## 0.0.0.0 area 0
+ network ##LANFWIP## 0.0.0.0 area 1
+ network ##ROUTEROSPFIP## 0.0.0.0 area 0
+!
+ip forward-protocol nd
+!
+!
+ip route ##TUNNELSTATICROUTE1## ##TUNNELSTATICROUTE1MASK## ##TUNNELSTATICROUTE1UPLINKIP##
+ip route ##TUNNELSTATICROUTE2## ##TUNNELSTATICROUTE2MASK## ##TUNNELSTATICROUTE2UPLINKIP##
+ip route ##TUNNELSTATICROUTE3## ##TUNNELSTATICROUTE3MASK## ##TUNNELSTATICROUTE3UPLINKIP##
+ip route ##TUNNELSTATICROUTE4## ##TUNNELSTATICROUTE4MASK## ##TUNNELSTATICROUTE4UPLINKIP##
+!
+ip access-list standard Data_Subnet
+ remark Data Users
+ip access-list standard SNMP_In
+ permit 0.0.0.0 255.255.255.0
+ip access-list standard VTY_In
+ permit 172.24.1.0 0.0.0.255
+ deny   any
+!
+ip access-list extended QOS_NetControl_Mark
+ remark Mark Network Control Traffic
+ip access-list extended QOS_NetMgmt_Mark
+ remark Mark Network Management Traffic
+ permit object-group NetworkManagement_SVC object-group NetworkManagement_NET any
+ip access-list extended QOS_Voice_Mark
+ remark Voice Traffic
+ permit object-group Voice_SVC object-group Voice_Subnets_NET any
+ip access-list extended QOS_Web_Mark
+ remark Mark Web Traffic
+ permit object-group Web_SVC object-group Data_Subnets_NET any
+!
+ipv6 ioam timestamp
+!
+!
+tftp-server flash0:PhoneBootLoads
+tftp-server flash0:PhoneBootLoadsFile2
+tftp-server flash0:PhoneBootLoadsFile3
+tftp-server flash0:PhoneBootLoadsFile4
+!
+!
+!
+control-plane
+!
+
+!
+!
+!
+!
+!
+dial-peer voice 555 voip
+ description Example
+ destination-pattern 555[0-5]...
+ session target ipv4:10.11.11.254
+!
+!
+!
+telephony-service
+ max-ephones 15
+ max-dn 15
+ ip source-address 172.30.2.224 port 2000
+ load 7985 firmwareversionhere
+ date-format dd-mm-yy
+ max-conferences 4 gain -6
+ transfer-system full-consult
+!
+!
+ephone-dn  1
+ number 5555555
+ label example
+ description Example phone
+ name example
+!
+!
+ephone  1
+ device-security-mode none
+ mac-address 0011.2233.4455
+ button  1:1
+!
+banner login ^C
+DTECH Router Cisco 5921
+^C
+!
+!
+!
+line console 0
+exec-timeout 10 0
+logging synchronous
+password ##RouterPW##
+login
+line aux 0
+no exec
+line vty 0 4
+password ##RouterPW##
+login local
+transport input none
+!
+ntp server ##NTPSERVER##
+!
+end
+
+wr mem

@@ -1,0 +1,171 @@
+#version=DEVEL
+
+install
+
+eula --agreed
+
+reboot
+
+# Run the Setup Agent on first boot
+firstboot --enable
+ignoredisk --only-use=sda
+# Keyboard layouts
+keyboard us
+# System language
+lang en_US
+# System timezone
+timezone UTC --isUtc
+
+selinux --permissive
+
+# Network information
+network --hostname=sn-c5921-host.localdomain
+
+# Root password
+rootpw $piderM@n1taclan
+user --name=user --plaintext --password $piderM@n1taclan
+
+# Partition clearing information
+clearpart --all --initlabel --drives=sda
+
+# System bootloader configuration
+bootloader --location=mbr --boot-drive=sda
+autopart --type=lvm
+zerombr
+
+%packages --ignoremissing
+@^minimal
+@base
+%end
+
+%post --nochroot
+echo $(dmidecode -s system-serial-number)-c5921-host.localdomain > /etc/hostname
+
+#!/bin/sh
+
+set -x -v
+exec 1>/mnt/sysimage/root/KSStage1.log 2>&1
+find . -type d -maxdepth 5
+echo "==> Copying files from media to install drive..."
+cp -r /run/install/repo/Cisco /mnt/sysimage/var/lib/rpm
+%end
+
+%post
+
+#!/bin/sh
+
+set -x -v
+exec 1>/root/KSStage2.log 2>&1
+
+cd /var/lib/rpm/Cisco
+rpm -Uvh --nodeps --force glibc-2.17-260.el7_6.4.i686.rpm glibc-2.17-260.el7_6.4.x86_64.rpm glibc-common-2.17-260.el7_6.4.x86_64.rpm libacl-2.2.51-14.el7.x86_64.rpm libattr-2.4.46-13.el7.x86_64.rpm libcap-2.22-9.el7.x86_64.rpm libcom_err-1.42.9-13.el7.x86_64.rpm libffi-3.0.13-18.el7.i686.rpm libffi-3.0.13-18.el7.x86_64.rpm libgcc-4.8.5-36.el7_6.1.i686.rpm libgcc-4.8.5-36.el7_6.1.x86_64.rpm libselinux-2.5-14.1.el7.x86_64.rpm libsepol-2.5-10.el7.x86_64.rpm libstdc++-4.8.5-36.el7_6.1.i686.rpm libstdc++-4.8.5-36.el7_6.1.x86_64.rpm libtasn1-4.10-1.el7.i686.rpm libtasn1-4.10-1.el7.x86_64.rpm libverto-0.2.5-4.el7.x86_64.rpm ncurses-5.9-14.20130511.el7_4.x86_64.rpm ncurses-base-5.9-14.20130511.el7_4.noarch.rpm ncurses-libs-5.9-14.20130511.el7_4.i686.rpm ncurses-libs-5.9-14.20130511.el7_4.x86_64.rpm nspr-4.19.0-1.el7_5.i686.rpm nspr-4.19.0-1.el7_5.x86_64.rpm nss-softokn-3.36.0-5.el7_5.i686.rpm nss-softokn-3.36.0-5.el7_5.x86_64.rpm nss-softokn-freebl-3.36.0-5.el7_5.i686.rpm nss-softokn-freebl-3.36.0-5.el7_5.x86_64.rpm nss-util-3.36.0-1.1.el7_6.i686.rpm nss-util-3.36.0-1.1.el7_6.x86_64.rpm
+set -x -v
+exec 1>/root/KSStage22.log 2>&1
+rpm -Uvh c5921-15.6.3.M6-1.i686.rpm
+
+systemctl enable serial-cisco@ttyS0.service
+
+
+
+
+
+echo "########## EXAMPLE VIRTUAL SWROPTIONS FILE ##############" > /opt/cisco/c5921/SWROPTIONS
+echo "" >> /opt/cisco/c5921/SWROPTIONS
+echo "#Use launchapp=c5921i86-universalk9_npe-ms.SSA for NPE image" >> /opt/cisco/c5921/SWROPTIONS
+echo "" >> /opt/cisco/c5921/SWROPTIONS
+echo "soft-rommon=./" >> /opt/cisco/c5921/SWROPTIONS
+echo "launchapp=c5921i86-universalk9-ms.SPA" >> /opt/cisco/c5921/SWROPTIONS
+echo "ram=512" >> /opt/cisco/c5921/SWROPTIONS
+echo "ethernet-slots=2" >> /opt/cisco/c5921/SWROPTIONS
+echo "node-lock-type=machine" >> /opt/cisco/c5921/SWROPTIONS
+echo "" >> /opt/cisco/c5921/SWROPTIONS
+echo "#This variable has to be set to true for kernel versions that has the patch(RHEL bug 1135347) and" >> /opt/cisco/c5921/SWROPTIONS
+echo "#to false for kernel versions that does not have the patch." >> /opt/cisco/c5921/SWROPTIONS
+echo "#Not required for Centos Linux distributions except kernel version 2.6.36." >> /opt/cisco/c5921/SWROPTIONS
+echo "#Mandatory for all other Liinux distributions" >> /opt/cisco/c5921/SWROPTIONS
+echo "#For example for kernel 2.6.32-504.23.4 set flag as below" >> /opt/cisco/c5921/SWROPTIONS
+echo "" >> /opt/cisco/c5921/SWROPTIONS
+echo "linux-vlan-stripped-from-pak=true" >> /opt/cisco/c5921/SWROPTIONS
+echo "" >> /opt/cisco/c5921/SWROPTIONS
+echo "" >> /opt/cisco/c5921/SWROPTIONS
+echo "### FILE MAPPING SECTION ###" >> /opt/cisco/c5921/SWROPTIONS
+echo "" >> /opt/cisco/c5921/SWROPTIONS
+echo "[filemap]" >> /opt/cisco/c5921/SWROPTIONS
+echo "ios=flash0" >> /opt/cisco/c5921/SWROPTIONS
+echo "linux=/opt/cisco/c5921/" >> /opt/cisco/c5921/SWROPTIONS
+echo "access=rw" >> /opt/cisco/c5921/SWROPTIONS
+echo "" >> /opt/cisco/c5921/SWROPTIONS
+echo "" >> /opt/cisco/c5921/SWROPTIONS
+echo "### INTERFACE MAPPING SECTION ###" >> /opt/cisco/c5921/SWROPTIONS
+echo "" >> /opt/cisco/c5921/SWROPTIONS
+echo "# Map Linux eth0 to IOS e0/0, type raw" >> /opt/cisco/c5921/SWROPTIONS
+echo "# Set promiscuous true" >> /opt/cisco/c5921/SWROPTIONS
+echo "# Make speed/duplex interface configs available for e0/0 in IOS." >> /opt/cisco/c5921/SWROPTIONS
+echo "# Monitor and Pull Linux interface changes like speed/duplex/MTU/MAC" >> /opt/cisco/c5921/SWROPTIONS
+echo "# of eth0 to IOS e0/0." >> /opt/cisco/c5921/SWROPTIONS
+echo "# Push changes like speed/duplex/MAC of IOS e0/0 to Linux eth0." >> /opt/cisco/c5921/SWROPTIONS
+echo "" >> /opt/cisco/c5921/SWROPTIONS
+echo "[interface]" >> /opt/cisco/c5921/SWROPTIONS
+echo "linux=enp1s0f0" >> /opt/cisco/c5921/SWROPTIONS
+echo "# M3-SE4 port A" >> /opt/cisco/c5921/SWROPTIONS
+echo "ios=e0/0" >> /opt/cisco/c5921/SWROPTIONS
+echo "type=raw" >> /opt/cisco/c5921/SWROPTIONS
+echo "promiscuous=true" >> /opt/cisco/c5921/SWROPTIONS
+echo "monitor-state=true" >> /opt/cisco/c5921/SWROPTIONS
+echo "push-mon-int=true" >> /opt/cisco/c5921/SWROPTIONS
+echo "" >> /opt/cisco/c5921/SWROPTIONS
+echo "[interface]" >> /opt/cisco/c5921/SWROPTIONS
+echo "linux=enp1s0f1" >> /opt/cisco/c5921/SWROPTIONS
+echo "# M3-SE4 port B" >> /opt/cisco/c5921/SWROPTIONS
+echo "ios=e0/1" >> /opt/cisco/c5921/SWROPTIONS
+echo "type=raw" >> /opt/cisco/c5921/SWROPTIONS
+echo "promiscuous=true" >> /opt/cisco/c5921/SWROPTIONS
+echo "monitor-state=true" >> /opt/cisco/c5921/SWROPTIONS
+echo "push-mon-int=true" >> /opt/cisco/c5921/SWROPTIONS
+echo "" >> /opt/cisco/c5921/SWROPTIONS
+echo "[interface]" >> /opt/cisco/c5921/SWROPTIONS
+echo "linux=enp2s0f3" >> /opt/cisco/c5921/SWROPTIONS
+echo "# M3-SE4 internal port to ESS-3300 switch" >> /opt/cisco/c5921/SWROPTIONS
+echo "ios=e0/2" >> /opt/cisco/c5921/SWROPTIONS
+echo "type=raw" >> /opt/cisco/c5921/SWROPTIONS
+echo "promiscuous=true" >> /opt/cisco/c5921/SWROPTIONS
+echo "monitor-state=true" >> /opt/cisco/c5921/SWROPTIONS
+echo "push-mon-int=true" >> /opt/cisco/c5921/SWROPTIONS
+echo "" >> /opt/cisco/c5921/SWROPTIONS
+echo "[interface]" >> /opt/cisco/c5921/SWROPTIONS
+echo "linux=enp2s0f0" >> /opt/cisco/c5921/SWROPTIONS
+echo "# M3-SE4 port C" >> /opt/cisco/c5921/SWROPTIONS
+echo "ios=e1/0" >> /opt/cisco/c5921/SWROPTIONS
+echo "type=raw" >> /opt/cisco/c5921/SWROPTIONS
+echo "promiscuous=true" >> /opt/cisco/c5921/SWROPTIONS
+echo "monitor-state=true" >> /opt/cisco/c5921/SWROPTIONS
+echo "push-mon-int=true" >> /opt/cisco/c5921/SWROPTIONS
+echo "" >> /opt/cisco/c5921/SWROPTIONS
+echo "[interface]" >> /opt/cisco/c5921/SWROPTIONS
+echo "linux=enp2s0f1" >> /opt/cisco/c5921/SWROPTIONS
+echo "# M3-SE4 port D" >> /opt/cisco/c5921/SWROPTIONS
+echo "ios=e1/1" >> /opt/cisco/c5921/SWROPTIONS
+echo "type=raw" >> /opt/cisco/c5921/SWROPTIONS
+echo "promiscuous=true" >> /opt/cisco/c5921/SWROPTIONS
+echo "monitor-state=true" >> /opt/cisco/c5921/SWROPTIONS
+echo "push-mon-int=true" >> /opt/cisco/c5921/SWROPTIONS
+echo "" >> /opt/cisco/c5921/SWROPTIONS
+echo "[interface]" >> /opt/cisco/c5921/SWROPTIONS
+echo "linux=enp2s0f2" >> /opt/cisco/c5921/SWROPTIONS
+echo "# M3-SE4 port E" >> /opt/cisco/c5921/SWROPTIONS
+echo "ios=e1/2" >> /opt/cisco/c5921/SWROPTIONS
+echo "type=raw" >> /opt/cisco/c5921/SWROPTIONS
+echo "promiscuous=true" >> /opt/cisco/c5921/SWROPTIONS
+echo "monitor-state=true" >> /opt/cisco/c5921/SWROPTIONS
+echo "push-mon-int=true" >> /opt/cisco/c5921/SWROPTIONS
+echo "" >> /opt/cisco/c5921/SWROPTIONS
+echo "[interface]" >> /opt/cisco/c5921/SWROPTIONS
+echo "linux=enp0s31f6" >> /opt/cisco/c5921/SWROPTIONS
+echo "# M3-SE4 port MGMT" >> /opt/cisco/c5921/SWROPTIONS
+echo "ios=e1/3" >> /opt/cisco/c5921/SWROPTIONS
+echo "type=raw" >> /opt/cisco/c5921/SWROPTIONS
+echo "promiscuous=true" >> /opt/cisco/c5921/SWROPTIONS
+echo "monitor-state=true" >> /opt/cisco/c5921/SWROPTIONS
+echo "push-mon-int=true" >> /opt/cisco/c5921/SWROPTIONS
+
+%end

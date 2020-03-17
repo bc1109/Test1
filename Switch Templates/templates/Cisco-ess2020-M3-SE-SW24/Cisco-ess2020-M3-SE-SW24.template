@@ -1,0 +1,189 @@
+!
+enable
+configure terminal
+enable secret ##ethSW1PW##
+username ##AdminAcct## password ##ethSW1PW##
+service password-encryption
+service tcp-keepalives-in
+hostname M3-SE-SW24-SFP
+no logging console
+spanning-tree mode rapid-pvst
+spanning-tree vlan 1-999 priority 28672
+ip domain-name ##FQDN##
+cry key gen rsa 
+2048
+ip ssh time-out 60
+ip ssh authentication-retries 3
+ip ssh version 2 
+!
+vlan ##ServerVLAN##
+name Server
+vlan ##ClientVLAN##
+name Client
+
+interface FastEthernet1/1
+!description    
+!description SWITCH  M3-SE-SW24-SFP ess2020
+!description Port Host-Connection
+ description 1 -  Router Gi0/0 (Trunk)
+ switchport access vlan ##ServerVLAN##
+ switchport mode access
+interface FastEthernet1/2
+ description 2 -  Admin Server - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface FastEthernet1/3
+ description 3 -  ESXi - ETH-MGMT or VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface FastEthernet1/4
+ description 4 -  ESXi - ETH-MGMT or VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface FastEthernet1/5
+ description 5 -  ESXi - ETH-MGMT or VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface FastEthernet1/6
+ description 6 -  ESXi - ETH-MGMT or VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface FastEthernet1/7
+ description 7 -  ESXi - ETH-MGMT or VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface FastEthernet1/8
+ description 8 -  ESXi - ETH-MGMT or VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface FastEthernet1/9
+ description 9 -  ESXi - ETH-MGMT or VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface FastEthernet1/10
+ description 10 - ESXi - ETH-MGMT or VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface FastEthernet1/11
+ description 11 - ESXi - ETH-MGMT or VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+interface FastEthernet1/12
+ description 12 - ESXi - ETH-MGMT or VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ spanning-tree portfast
+
+interface range FastEthernet1/2 - 12
+ switchport access vlan ##ServerVLAN##
+ switchport mode access
+ spanning-tree portfast
+
+interface range FastEthernet1/13 - 24
+ switchport access vlan ##ClientVLAN##
+ switchport mode access
+ spanning-tree portfast
+
+interface FastEthernet1/13
+ description 13 - Client
+ spanning-tree portfast
+interface FastEthernet1/14
+ description 14 - Client
+ spanning-tree portfast
+interface FastEthernet1/15
+ description 15 - Client
+ spanning-tree portfast
+interface FastEthernet1/16
+ description 16 - Client
+ spanning-tree portfast
+interface FastEthernet1/17
+ description 17 - Client
+ spanning-tree portfast
+interface FastEthernet1/18
+ description 18 - Client
+ spanning-tree portfast
+interface FastEthernet1/19
+ description 19 - Client
+ spanning-tree portfast
+interface FastEthernet1/20
+ description 20 - Client
+ spanning-tree portfast
+interface FastEthernet1/21
+ description 21 - Client
+ spanning-tree portfast
+interface FastEthernet1/22
+ description 22 - Client
+ spanning-tree portfast
+interface FastEthernet1/23
+ description 23 - Client
+ spanning-tree portfast
+interface FastEthernet1/24
+ description 24 - Client
+ spanning-tree portfast
+!
+
+!
+interface GigabitEthernet1/1
+ description Gigabit Ethernet 1/1 (undefined)
+ spanning-tree portfast
+!
+interface GigabitEthernet1/2
+ spanning-tree portfast
+ description Gigabit Ethernet 1/2 (undefined)
+!
+
+
+interface Vlan1
+ no ip address
+
+interface Vlan##ServerVLAN##
+ description Server VLAN is configured.
+ ip address ##SwitchServerVLANIP## ##ServerMask##
+ ip pim sparse-dense-mode
+
+interface Vlan##ClientVLAN##
+ description Client VLAN is configured.
+ ip address ##ClientGateway## ##ClientMask##
+ ip helper-address ##DHCPServerIP##
+ ip pim sparse-dense-mode
+
+ip route 0.0.0.0 0.0.0.0 ##RouterLANIP##
+
+ip forward-protocol nd
+ip classless
+ip routing
+ip tcp synwait-time 10
+no ip http server
+ip multicast-routing distributed
+
+banner motd ^C
+DTECH Labs M3-SE-C3560-P
+^C
+
+line console 0
+exec-timeout 10 0
+logging synchronous
+password ##ethSW1PW##
+login
+line vty 0 4
+password ##ethSW1PW##
+login local
+transport input none
+line vty 5 15
+password ##ethSW1PW##
+login local
+transport input none
+end
+
+wr mem
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

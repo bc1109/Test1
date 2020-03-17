@@ -1,0 +1,94 @@
+en
+config t
+no logging console
+enable secret ##RouterPW##
+username ##AdminAcct## password ##RouterPW##
+no service pad
+ip forward-protocol nd
+ip tcp synwait-time 10
+service tcp-keepalives-in
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+hostname DTECHRouter
+no aaa new-model
+no ip source-route
+no ip bootp server
+no ip http server
+no ip http secure-server
+no ip bootp server
+no boot network
+no service call-home
+
+ip domain name ##FQDN##
+cry key gen rsa 
+2048
+ip ssh time-out 60
+ip ssh authentication-retries 3
+ip ssh version 2
+ip multicast-routing
+!
+interface Ethernet0/0
+ description LAN Connection from SWITCH 1 Gi1/0/1
+ ip address ##RouterLANIP## ##ServerMask##
+ duplex auto
+ speed auto
+ no shut
+!
+interface Ethernet0/1
+ description WAN Link
+ ip address ##WANIP## ##WANMask##
+ duplex auto
+ speed auto
+ no shut
+!
+interface Ethernet0/2
+ no ip address
+!
+interface Ethernet0/3
+ no ip address
+!
+interface Ethernet0/4
+ no ip address
+!
+interface Vlan1
+ no ip address
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+ip route 0.0.0.0 0.0.0.0 ##WANUPSTREAMIP##
+!
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+banner login ^C
+DTECH Router Cisco 5921 M3-SE4
+^C
+
+line console 0
+exec-timeout 10 0
+logging synchronous
+password ##RouterPW##
+login
+line aux 0
+no exec
+line vty 0 4
+password ##RouterPW##
+login local
+transport input none
+
+end
+
+wr mem
+
+

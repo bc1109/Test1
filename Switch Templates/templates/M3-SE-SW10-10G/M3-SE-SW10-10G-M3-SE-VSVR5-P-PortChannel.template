@@ -1,0 +1,130 @@
+configure terminal
+enable password ##ethSW1PW##
+username ##AdminAcct## password ##ethSW1PW##
+hostname 10GDTECHSwitch1
+no logging console
+spanning-tree mode rstp
+spanning-tree priority 28672
+ip domain name ##FQDN##
+ip routing
+no ip http server
+
+interface vlan 1
+ ip address 1.1.1.1 255.255.255.0
+
+interface vlan ##ServerVLAN##
+name Server
+interface vlan 150
+name vMotion
+interface vlan 180
+name VSAN
+interface vlan ##ClientVLAN##
+name Client
+
+port-channel load-balance src-dst-mac-ip
+
+interface port-channel 1
+switchport mode trunk
+switchport trunk allowed vlan add ##ALLVLANS##
+
+interface port-channel 2
+switchport mode trunk
+switchport trunk allowed vlan add ##ALLVLANS##
+
+interface port-channel 3
+switchport mode trunk
+switchport trunk allowed vlan add ##ALLVLANS##
+
+interface XG1
+ description "SWITCH 1 with M3-SE-VSVR5-P vSAN Setup"
+ description "Port Host-Connection"
+ description "1 -  M3-SE4 Uplink (router) or Admin Laptop"
+ switchport access vlan ##ServerVLAN##
+ switchport mode access
+interface XG2
+ description "2 -  ESXi1-VSVR5 ETH-MGMT - Server VLAN ##ServerVLAN##"
+interface XG3
+ description "3 -  ESXi2-VSVR5 ETH-MGMT - Server VLAN ##ServerVLAN##"
+interface XG4
+ description "4 -  ESXi3-VSVR5 ETH-MGMT - Server VLAN ##ServerVLAN##"
+
+interface range XG2 - 4
+ switchport access vlan ##ServerVLAN##
+ switchport mode access
+ spanning-tree portfast
+
+
+interface XG5
+ description "5 -  Trunk VLANs - MGMT, vMotion, vSAN, Client"
+ switchport mode trunk
+ switchport trunk allowed vlan add ##ALLVLANS##
+ channel-group 1 mode auto
+
+interface XG6
+ description "6 -  Trunk VLANs - MGMT, vMotion, vSAN, Client"
+ switchport mode trunk
+ switchport trunk allowed vlan add ##ALLVLANS##
+ channel-group 1 mode auto
+
+interface XG7
+ description "7 -  Trunk VLANs - MGMT, vMotion, vSAN, Client"
+ switchport mode trunk
+ switchport trunk allowed vlan add ##ALLVLANS##
+ channel-group 2 mode auto
+
+interface XG8
+ description "8 - Trunk VLANs - MGMT, vMotion, vSAN, Client"
+ switchport mode trunk
+ switchport trunk allowed vlan add ##ALLVLANS##
+ channel-group 2 mode auto
+
+interface XG9
+ description "9 - Trunk VLANs - MGMT, vMotion, vSAN, Client"  
+ switchport mode trunk
+ switchport trunk allowed vlan add ##ALLVLANS##
+ channel-group 3 mode auto
+
+interface XG10
+ description "10 - Trunk VLANs - MGMT, vMotion, vSAN, Client"
+ switchport mode trunk
+ switchport trunk allowed vlan add ##ALLVLANS##
+ channel-group 3 mode auto
+
+
+interface Vlan##ServerVLAN##
+  ip address ##SwitchServerVLANIP## ##ServerMask##
+ 
+interface Vlan##ClientVLAN##
+ ip address ##ClientGateway## ##ClientMask##
+
+interface Vlan1
+ no ip address
+ shutdown
+
+
+ip helper-address ##ClientGateway## ##DHCPServerIP##
+ 
+
+banner login %
+DTECH Labs M3-SE-SW10-10G
+%
+
+line console
+exec-timeout 10 0
+logging on
+password ##ethSW1PW##
+login authentication default
+
+line ssh
+password ##ethSW1PW##
+login authentication default
+
+
+line telnet
+password ##ethSW1PW##
+login authentication default
+
+end
+
+write memory
+Y

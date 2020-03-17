@@ -1,0 +1,341 @@
+!
+enable
+configure terminal
+!
+enable secret ##ethSW1PW##
+username ##AdminAcct## password ##ethSW1PW##
+!
+service password-encryption
+service sequence-numbers
+service tcp-keepalives-in
+service tcp-keepalives-out
+service timestamps debug datetime msec show-timezone
+service timestamps log datetime msec show-timezone
+!
+hostname TACLANSwitch3
+logging on
+login on-failure log every 1
+login on-success log every 1
+!
+spanning-tree mode rapid-pvst
+spanning-tree portfast default
+spanning-tree portfast bpduguard default
+errdisable recovery cause bpduguard
+errdisable recovery cause psecure-violation
+errdisable recovery interval 1800
+!
+vtp domain NULL
+vtp mode transparent
+ip domain-name ##FQDN##
+crypto key generate rsa general-keys modulus 2048
+ip ssh authentication-retries 2
+ip ssh version 2 
+ip ssh time-out 10
+ip ssh dh min size 2048
+ip ssh server algorithm mac hmac-sha1-96 hmac-sha1
+!
+vlan ##ServerVLAN##
+name ::SERVER::
+vlan ##VMotionVLAN##
+name ::vMotion::
+vlan ##vSANVLAN##
+name ::VSAN::
+vlan ##ClientVLAN##
+name ::CLIENT::
+vlan 3
+name ::NATIVE::
+vlan 888
+name ::NULL_VLAN::
+!
+interface GigabitEthernet0/1
+!description
+!description
+!description TACLAN Heavy VSVR-P Switch 3
+!description Port Host-Connection
+ description 1 - ESXi4-VSVR ETH-MGMT - Server VLAN ##ServerVLAN##
+ switchport
+ switchport mode access
+ switchport nonegotiate
+ switchport access vlan ##ServerVLAN##
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no logging event link-status
+ no snmp trap link-status
+!
+interface GigabitEthernet0/2
+ description 2 - ESXi4-VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ switchport
+ switchport mode access
+ switchport nonegotiate
+ switchport access vlan ##ServerVLAN##
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no logging event link-status
+ no snmp trap link-status
+!
+interface GigabitEthernet0/3
+ description 3 - ESXi5-VSVR ETH-MGMT - Server VLAN ##ServerVLAN##
+ switchport
+ switchport mode access
+ switchport nonegotiate
+ switchport access vlan ##ServerVLAN##
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no logging event link-status
+ no snmp trap link-status
+!
+interface GigabitEthernet0/4
+ description 4 - ESXi5-VSVR ETH TOP - Server VLAN ##ServerVLAN##
+ switchport
+ switchport mode access
+ switchport nonegotiate
+ switchport access vlan ##ServerVLAN##
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no logging event link-status
+ no snmp trap link-status
+!
+interface GigabitEthernet0/5
+ description 5 - ESXi4-VSVR ETH BOTTOM - vMotion VLAN ##VMotionVLAN##
+ switchport
+ switchport mode access
+ switchport nonegotiate
+ switchport access vlan ##VMotionVLAN##
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no logging event link-status
+ no snmp trap link-status
+!
+interface GigabitEthernet0/6
+ description 6 - ESXi5-VSVR ETH BOTTOM - vMotion VLAN ##VMotionVLAN##
+ switchport
+ switchport mode access
+ switchport nonegotiate
+ switchport access vlan ##VMotionVLAN##
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no logging event link-status
+ no snmp trap link-status
+!
+interface GigabitEthernet0/7
+ description 7 - ESXi4-VSVR 10GE ETH LEFT - VSAN VLAN ##vSANVLAN##
+ switchport
+ switchport mode access
+ switchport nonegotiate
+ switchport access vlan ##vSANVLAN##
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no logging event link-status
+ no snmp trap link-status
+!
+interface GigabitEthernet0/8
+ description 8 - ESXi4-VSVR 10GE ETH RIGHT - VSAN VLAN ##vSANVLAN##
+ switchport
+ switchport mode access
+ switchport nonegotiate
+ switchport access vlan ##vSANVLAN##
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no logging event link-status
+ no snmp trap link-status
+!
+interface GigabitEthernet0/9
+ description 9 - ESXi5-VSVR 10GE ETH LEFT - VSAN VLAN ##vSANVLAN##
+ switchport
+ switchport mode access
+ switchport nonegotiate
+ switchport access vlan ##vSANVLAN##
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no logging event link-status
+ no snmp trap link-status
+!
+interface GigabitEthernet0/10
+ description 10 - ESXi5-VSVR 10GE ETH RIGHT - VSAN VLAN ##vSANVLAN##
+ switchport
+ switchport mode access
+ switchport nonegotiate
+ switchport access vlan ##vSANVLAN##
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no logging event link-status
+ no snmp trap link-status
+!
+interface GigabitEthernet0/11
+ description 11 - DISABLED - VLAN 888
+ switchport 
+ switchport mode access 
+ switchport nonegotiate
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no logging event link-status
+ no snmp trap link-status
+ switchport port-security maximum 1
+ switchport port-security mac-address sticky
+ switchport port-security violation shutdown
+ switchport port-security aging time 30
+ switchport port-security 
+ switchport access vlan 888
+ shutdown
+!
+interface GigabitEthernet0/12
+ description 12 - DISABLED - VLAN 888
+ switchport 
+ switchport mode access 
+ switchport nonegotiate
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no logging event link-status
+ no snmp trap link-status
+ switchport port-security maximum 1
+ switchport port-security mac-address sticky
+ switchport port-security violation shutdown
+ switchport port-security aging time 30
+ switchport port-security 
+ switchport access vlan 888
+ shutdown
+!
+interface GigabitEthernet0/13
+ description 13 - Switch 3 to Switch 1 Port Gi0/14
+ switchport
+ switchport mode trunk
+ switchport nonegotiate
+ switchport trunk allowed vlan ##ServerVLAN##,##VMotionVLAN##,##vSANVLAN##
+ switchport trunk native vlan 3
+!
+interface GigabitEthernet0/14
+ description 14 - Switch 3 to Client Switch 4 Port Gi1/0/1
+ switchport
+ switchport mode trunk
+ switchport nonegotiate
+ switchport trunk allowed vlan ##ClientVLAN##
+ switchport trunk native vlan 3
+!
+interface GigabitEthernet0/15
+ description 15 - DISABLED - VLAN 888
+ switchport 
+ switchport mode access 
+ switchport nonegotiate
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no logging event link-status
+ no snmp trap link-status
+ switchport port-security maximum 1
+ switchport port-security mac-address sticky
+ switchport port-security violation shutdown
+ switchport port-security aging time 30
+ switchport port-security 
+ switchport access vlan 888
+ shutdown
+!
+interface GigabitEthernet0/16
+ description 16 - DISABLED - VLAN 888
+ switchport 
+ switchport mode access 
+ switchport nonegotiate
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no logging event link-status
+ no snmp trap link-status
+ switchport port-security maximum 1
+ switchport port-security mac-address sticky
+ switchport port-security violation shutdown
+ switchport port-security aging time 30
+ switchport port-security 
+ switchport access vlan 888
+ shutdown
+!
+interface Vlan1
+ no ip address
+ shutdown
+ description VLAN_1 DISABLED
+!
+!
+ip forward-protocol nd
+ip classless
+no service config
+no service call-home
+no service finger
+no service pad
+no service tcp-small-servers
+no service udp-small-servers
+no ip bootp server
+no ip finger
+no ip http server
+no ip http secure-server
+no ip identd
+no vstack
+ip multicast-routing distributed
+no ip arp gratuitous none 
+ip dhcp bootp ignore
+ip icmp rate-limit unreachable 1000
+ip tcp synwait-time 10
+no boot network
+no mop enabled
+no ip gratuitous-arps
+no ip mask-reply
+no ip source-route
+clock timezone GMT 0
+no clock summer-time
+no ip domain-lookup
+no ip name-server
+!
+no snmp-server system-shutdown
+no snmp-server trap-timeout 180
+snmp-server packetsize 1400
+snmp-server queue-length 20
+!
+logging buffered 10000 informational
+logging trap informational 
+logging facility local6
+no logging console
+no logging monitor
+!
+logging discriminator CHGNTFY severity includes 5 facility includes SYS mnemonics includes RELOAD|RESTART|CONFIG
+!
+no banner exec
+no banner login
+no banner motd
+!
+banner login ^
+YOU ARE ACCESSING A U.S. GOVERNMENT (USG) INFORMATION SYSTEM (IS) THAT
+IS PROVIDED FOR USG-AUTHORIZED USE ONLY. BY USING THIS IS (WHICH
+INCLUDES ANY DEVICE ATTACHED TO THIS IS), YOU CONSENT TO THE FOLLOWING
+CONDITIONS:
+
+-THE USG ROUTINELY INTERCEPTS AND MONITORS COMMUNCIATION ON THIS IS
+FOR PURPOSES INCLUDING, BUT NOT LIMITED TO, PENETRATION TESTING, COMSEC
+MONITORING, NETWORK OPERATIONS AND DEFENSE, PERSONAL MISCONDUCT (PM),
+LAW ENFORCEMENT (LE), AND COUNTERINTELLIGENCE (CI) INVESTIGATIONS. 
+-AT ANY TIME, THE USG MAY INSPECT AND SEIZE DATA STORED ON THIS IS.
+-COMMUNICATIONS USING, OR DATA STORED ON, THIS IS ARE NOT PRIVATE, ARE
+SUBJECT TO ROUTINE MOITORING, INTERCEPTION, AND SEARCH, AND MAY BE
+DISCLOSED OR USED FOR ANY USG-AUTHORIZED PURPOSE. THIS IS INCLUDES
+SECURITY MEASURES (E.G., AUTHENTICATION AND ACCESS CONTROLS) TO PROTECT
+USG INTERESTS--NOT FOR YOUR PERSONAL BENEFIT OR PRIVACY.
+-NOTWITHSTANDING THE ABOVE, USING THIS IS DOESN NOT CONSTITUTE CONSENT
+TO PM, LE OR CI INVESTIGATIVE SEARCHING OR MONITORING OF THE CONTENT OF
+PRIVILEGED COMMUNICATIONS, OR WORK PRODUCT, RELATED TO PERSONAL
+REPRESENTATION OR SERVICES BY ATTORNEYS, PSYCHOTHERAPISTS, OR CLERGY,
+AND THEIR ASSISTANTS. SUCH COMMUNICATIONS AND WORK PRODUCT ARE PRIVATE 
+AND CONFIDENTIAL. SEE USER AGREEMENT FOR DETAILS.
+^
+!
+line console 0
+exec-timeout 9 59
+logging synchronous
+password ##ethSW1PW##
+login local
+line vty 0 4
+password ##ethSW1PW##
+login local
+exec-timeout 9 59
+transport input ssh
+line vty 5 15
+password ##ethSW1PW##
+login local
+exec-timeout 9 59
+transport input ssh
+end
+!
+wr mem
